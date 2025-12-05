@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Achiever - Daily Progress Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-box h3 {
+            font-size: 14px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+
+        .stat-box p {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .login-section {
+            text-align: center;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin: 20px 0;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .login-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .streak-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .day-box {
+            aspect-ratio: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: #f5f5f5;
+        }
+
+        .day-box.logged-in {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .day-box.today {
+            border: 3px solid #ffd700;
+        }
+
+        .goals-list {
+            list-style: none;
+        }
+
+        .goal-item {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .goal-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .goal-input {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .goal-input input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .goal-input button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .rewards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .reward-box {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .reward-box:hover {
+            transform: scale(1.05);
+        }
+
+        .reward-box.locked {
+            background: #e0e0e0;
+            opacity: 0.6;
+        }
+
+        .reward-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .reward-day {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            display: none;
+            animation: slideIn 0.5s;
+            z-index: 1000;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .notification.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Goal Achiever</h1>
+            <p>Track your progress, build streaks, earn rewards!</p>
+            <div class="user-info">
+                <div class="stat-box">
+                    <h3>Current Streak</h3>
+                    <p id="currentStreak">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Total Points</h3>
+                    <p id="totalPoints">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Goals Completed</h3>
+                    <p id="goalsCompleted">0</p>
+                </div>
+                <div class="stat-box">
+                    <h3>Level</h3>
+                    <p id="userLevel">1</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📅 Daily Login</h2>
+                <div class="login-section">
+                    <p id="loginStatus">Click below to log in today!</p>
+                    <button class="login-btn" id="loginBtn" onclick="dailyLogin()">
+                        Check In Today
+                    </button>
+                    <p id="lastLogin"></p>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="loginProgress">0%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>🏆 Daily Rewards</h2>
+                <p>Login consecutively to unlock rewards!</p>
+                <div class="rewards-grid" id="rewardsGrid"></div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="card">
+                <h2>📊 Login Streak Calendar</h2>
+                <div class="streak-calendar" id="calendar"></div>
+            </div>
+
+            <div class="card">
+                <h2>✅ Daily Goals</h2>
+                <ul class="goals-list" id="goalsList"></ul>
+                <div class="goal-input">
+                    <input type="text" id="goalInput" placeholder="Add a new goal...">
+                    <button onclick="addGoal()">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <h3 id="notifTitle">🎉 Success!</h3>
+        <p id="notifMessage">You've logged in today!</p>
+    </div>
+
+    <script>
+        // Initialize data structure
+        let userData = {
+            loginDates: [],
+            currentStreak: 0,
+            totalPoints: 0,
+            goalsCompleted: 0,
+            level: 1,
+            goals: [],
+            lastLogin: null
+        };
+
+        // Rewards configuration
+        const rewards = [
+            { day: 1, icon: '🌟', name: 'Beginner', points: 10 },
+            { day: 3, icon: '🔥', name: 'On Fire', points: 30 },
+            { day: 7, icon: '💎', name: 'Diamond', points: 70 },
+            { day: 14, icon: '👑', name: 'Royalty', points: 150 },
+            { day: 30, icon: '🏆', name: 'Champion', points: 300 },
+            { day: 60, icon: '🚀', name: 'Rocket', points: 600 },
+            { day: 100, icon: '⭐', name: 'Superstar', points: 1000 },
+            { day: 365, icon: '🎖️', name: 'Legend', points: 5000 }
+        ];
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('goalAchieverData');
+            if (saved) {
+                userData = JSON.parse(saved);
+            }
+            updateUI();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('goalAchieverData', JSON.stringify(userData));
+        }
+
+        // Daily login function
+        function dailyLogin() {
+            const today = new Date().toDateString();
+            
+            if (userData.lastLogin === today) {
+                showNotification('Already Logged In', 'You already checked in today! Come back tomorrow.', '⚠️');
+                return;
+            }
+
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+
+            // Check if streak continues
+            if (userData.lastLogin === yesterdayStr) {
+                userData.currentStreak++;
+            } else if (userData.lastLogin !== today) {
+                userData.currentStreak = 1;
+            }
+
+            userData.loginDates.push(today);
+            userData.lastLogin = today;
+            userData.totalPoints += 10 + (userData.currentStreak * 2);
+            userData.level = Math.floor(userData.totalPoints / 100) + 1;
+
+            saveData();
+            updateUI();
+            checkRewards();
+            showNotification('Daily Check-In Complete!', `Streak: ${userData.currentStreak} days! +${10 + (userData.currentStreak * 2)} points`, '🎉');
+        }
+
+        // Check and unlock rewards
+        function checkRewards() {
+            rewards.forEach(reward => {
+                if (userData.currentStreak === reward.day) {
+                    userData.totalPoints += reward.points;
+                    showNotification(`🎁 Reward Unlocked!`, `${reward.icon} ${reward.name} - ${reward.points} bonus points!`, '🎊');
+                }
+            });
+            saveData();
+        }
+
+        // Add goal
+        function addGoal() {
+            const input = document.getElementById('goalInput');
+            const goalText = input.value.trim();
+            
+            if (goalText) {
+                userData.goals.push({
+                    id: Date.now(),
+                    text: goalText,
+                    completed: false,
+                    date: new Date().toDateString()
+                });
+                input.value = '';
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Toggle goal completion
+        function toggleGoal(id) {
+            const goal = userData.goals.find(g => g.id === id);
+            if (goal && !goal.completed) {
+                goal.completed = true;
+                userData.goalsCompleted++;
+                userData.totalPoints += 5;
+                showNotification('Goal Completed!', '+5 points earned!', '✅');
+                saveData();
+                updateUI();
+            }
+        }
+
+        // Delete goal
+        function deleteGoal(id) {
+            userData.goals = userData.goals.filter(g => g.id !== id);
+            saveData();
+            updateUI();
+        }
+
+        // Update UI
+        function updateUI() {
+            // Update stats
+            document.getElementById('currentStreak').textContent = userData.currentStreak;
+            document.getElementById('totalPoints').textContent = userData.totalPoints;
+            document.getElementById('goalsCompleted').textContent = userData.goalsCompleted;
+            document.getElementById('userLevel').textContent = userData.level;
+
+            // Update login button
+            const today = new Date().toDateString();
+            const loginBtn = document.getElementById('loginBtn');
+            const loginStatus = document.getElementById('loginStatus');
+            
+            if (userData.lastLogin === today) {
+                loginBtn.disabled = true;
+                loginBtn.textContent = '✓ Checked In Today';
+                loginStatus.textContent = '🎉 Great job! You\'ve logged in today!';
+            } else {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Check In Today';
+                loginStatus.textContent = 'Click below to log in today!';
+            }
+
+            // Update last login
+            if (userData.lastLogin) {
+                document.getElementById('lastLogin').textContent = `Last login: ${userData.lastLogin}`;
+            }
+
+            // Update progress bar
+            const nextReward = rewards.find(r => r.day > userData.currentStreak) || rewards[rewards.length - 1];
+            const progress = (userData.currentStreak / nextReward.day) * 100;
+            const progressFill = document.getElementById('loginProgress');
+            progressFill.style.width = progress + '%';
+            progressFill.textContent = `${userData.currentStreak}/${nextReward.day} days`;
+
+            // Render calendar
+            renderCalendar();
+
+            // Render rewards
+            renderRewards();
+
+            // Render goals
+            renderGoals();
+        }
+
+        // Render calendar
+        function renderCalendar() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '';
+            
+            const today = new Date();
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(today.getDate() - i);
+                const dateStr = date.toDateString();
+                
+                const dayBox = document.createElement('div');
+                dayBox.className = 'day-box';
+                dayBox.textContent = date.getDate();
+                
+                if (userData.loginDates.includes(dateStr)) {
+                    dayBox.classList.add('logged-in');
+                }
+                
+                if (dateStr === today.toDateString()) {
+                    dayBox.classList.add('today');
+                }
+                
+                calendar.appendChild(dayBox);
+            }
+        }
+
+        // Render rewards
+        function renderRewards() {
+            const grid = document.getElementById('rewardsGrid');
+            grid.innerHTML = '';
+            
+            rewards.forEach(reward => {
+                const box = document.createElement('div');
+                box.className = 'reward-box';
+                
+                if (userData.currentStreak < reward.day) {
+                    box.classList.add('locked');
+                }
+                
+                box.innerHTML = `
+                    <div class="reward-icon">${reward.icon}</div>
+                    <div class="reward-day">Day ${reward.day}</div>
+                    <div>${reward.points}pts</div>
+                `;
+                
+                grid.appendChild(box);
+            });
+        }
+
+        // Render goals
+        function renderGoals() {
+            const list = document.getElementById('goalsList');
+            list.innerHTML = '';
+            
+            const todayGoals = userData.goals.filter(g => g.date === new Date().toDateString());
+            
+            if (todayGoals.length === 0) {
+                list.innerHTML = '<li class="goal-item">No goals yet. Add one above!</li>';
+                return;
+            }
+            
+            todayGoals.forEach(goal => {
+                const li = document.createElement('li');
+                li.className = 'goal-item';
+                li.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <input type="checkbox" ${goal.completed ? 'checked' : ''} 
+                               onchange="toggleGoal(${goal.id})" 
+                               ${goal.completed ? 'disabled' : ''}>
+                        <span style="${goal.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${goal.text}</span>
+                    </div>
+                    <button onclick="deleteGoal(${goal.id})" style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">Delete</button>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        // Show notification
+        function showNotification(title, message, icon = '🎉') {
+            const notif = document.getElementById('notification');
+            document.getElementById('notifTitle').textContent = `${icon} ${title}`;
+            document.getElementById('notifMessage').textContent = message;
+            notif.classList.add('show');
+            
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 4000);
+        }
+
+        // Initialize on load
+        window.onload = function() {
+            loadData();
+            
+            // Allow Enter key to add goals
+            document.getElementById('goalInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addGoal();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
